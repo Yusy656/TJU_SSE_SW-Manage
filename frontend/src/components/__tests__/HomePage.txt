@@ -1,0 +1,82 @@
+// src/components/__tests__/HomePage.spec.js
+import { mount, flushPromises } from '@vue/test-utils';
+import { createRouter, createWebHistory } from 'vue-router';
+import HomePage from '../HomePage.vue';
+import { nextTick } from 'vue';
+
+describe('HomePage.vue', () => {
+  let router;
+
+  beforeEach(() => {
+    // 创建一个模拟的 Vue Router 实例
+    router = createRouter({
+      history: createWebHistory(),
+      routes: [
+        { path: '/', component: HomePage },
+        { path: '/learn-more', name: 'LearnMore', component: { template: '<div>Learn More Page</div>' } },
+        { path: '/processing', name: 'Processing', component: { template: '<div>Processing Page</div>' } }
+      ]
+    });
+  });
+
+  it('renders the title and description correctly', () => {
+    const wrapper = mount(HomePage, {
+      global: {
+        plugins: [router]
+      }
+    });
+
+    // 检查标题是否存在
+    expect(wrapper.find('.title').text()).toBe(
+      'Smoke Environment Human Target Detection Development'
+    );
+
+    // 检查描述文本
+    const paragraphs = wrapper.findAll('.description p');
+    expect(paragraphs.length).toBe(2);
+    expect(paragraphs[0].text()).toBe('Remove fog from images and label human figures using deep learning.'); // 注意这里有空格
+    expect(paragraphs[1].text()).toBe('Upload your image or video and see the magic.');
+  });
+
+  it('calls router.push with /learn-more when Learn More button is clicked', async () => {
+    // 创建间谍函数
+    const pushSpy = jest.spyOn(router, 'push');
+    
+    const wrapper = mount(HomePage, {
+      global: {
+        plugins: [router]
+      }
+    });
+
+    // 点击 "Learn More" 按钮
+    await wrapper.find('.learn-more-button').trigger('click');
+    await flushPromises();
+    
+    // 验证 router.push 是否被调用，以及参数是否正确
+    expect(pushSpy).toHaveBeenCalledWith('/learn-more');
+    
+    // 恢复原始方法
+    pushSpy.mockRestore();
+  });
+
+  it('calls router.push with /processing when Get Started button is clicked', async () => {
+    // 创建间谍函数
+    const pushSpy = jest.spyOn(router, 'push');
+    
+    const wrapper = mount(HomePage, {
+      global: {
+        plugins: [router]
+      }
+    });
+
+    // 点击 "Get Started" 按钮
+    await wrapper.find('.start-button').trigger('click');
+    await flushPromises();
+    
+    // 验证 router.push 是否被调用，以及参数是否正确
+    expect(pushSpy).toHaveBeenCalledWith('/processing');
+    
+    // 恢复原始方法
+    pushSpy.mockRestore();
+  });
+});

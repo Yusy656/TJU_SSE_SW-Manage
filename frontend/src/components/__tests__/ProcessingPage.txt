@@ -1,0 +1,115 @@
+import { mount, flushPromises } from '@vue/test-utils';
+import { createRouter, createMemoryHistory } from 'vue-router';
+import Processing from '../ProcessingPage.vue';
+
+// 模拟 Vue Router，给路由配置加上组件
+const router = createRouter({
+  history: createMemoryHistory(),
+  routes: [
+    { path: '/', name: 'Home', component: { template: '<div>Home</div>' } },
+    { path: '/result', name: 'Result', component: { template: '<div>Result</div>' } }
+  ]
+});
+
+// Mock 本地存储
+let mockLocalStorage = {};
+jest.spyOn(global.localStorage.__proto__, 'getItem').mockImplementation(key => mockLocalStorage[key]);
+jest.spyOn(global.localStorage.__proto__, 'setItem').mockImplementation((key, value) => {
+  mockLocalStorage[key] = value;
+});
+
+// Mock 图片资源
+jest.mock('@/assets/images/upload.png', () => 'mocked-upload-url');
+jest.mock('@/assets/images/add.png', () => 'mocked-add-url');
+
+// Mock FileReader
+beforeAll(() => {
+  class MockFileReader {
+    constructor() {
+      this.onload = null;
+      this.result = null;
+    }
+    readAsDataURL(file) {
+      this.result = 'data:image/png;base64,fakeBase64data';
+      if (this.onload) {
+        this.onload({ target: this });
+      }
+    }
+  }
+  global.FileReader = MockFileReader;
+});
+
+describe('Processing.vue', () => {
+  beforeEach(async () => {
+    mockLocalStorage = {};
+    router.push('/');
+    await router.isReady();
+  });
+
+  it('renders the page with correct initial state', async () => {
+    const wrapper = mount(Processing, {
+      global: { plugins: [router] }
+    });
+
+    const uploadImages = wrapper.findAll('.upload-png');
+    expect(uploadImages.length).toBe(2);
+    uploadImages.forEach(img => expect(img.attributes('src')).toBe('mocked-upload-url'));
+
+    const addImg = wrapper.find('.add-img img');
+    expect(addImg.exists()).toBe(true);
+    expect(addImg.attributes('src')).toBe('mocked-add-url');
+
+    const uploadTexts1 = wrapper.findAll('.upload-text1');
+    expect(uploadTexts1.length).toBe(2);
+    uploadTexts1.forEach(text => expect(text.text()).toBe('Click to upload or drag and drop'));
+
+    const uploadTexts2 = wrapper.findAll('.upload-text2');
+    expect(uploadTexts2.length).toBe(2);
+    uploadTexts2.forEach(text => expect(text.text()).toBe('SVG, PNG, JPG'));
+  });
+
+  it('allows image selection and displays the uploaded image', async () => {
+    const wrapper = mount(Processing, { global: { plugins: [router] } });
+    const inputFile = wrapper.find('input[type="file"][data-testid="infrared-file-input"]');
+
+    const file = new File(["content"], "example.png", { type: "image/png" });
+    Object.defineProperty(inputFile.element, 'files', { value: [file] });
+
+    // 触发 input 文件变更事件，触发组件读取文件流程
+    await inputFile.trigger('change');
+    await flushPromises();
+
+    // 触发保存按钮模拟保存操作，写入 localStorage
+    await wrapper.find('#save-button').trigger('click');
+    await flushPromises();
+
+    const uploadedImg = wrapper.find('.uploaded-png');
+    expect(uploadedImg.exists()).toBe(true);
+    expect(localStorage.getItem('infraredImage')).toContain("data:image/png");
+  });
+
+  it('saves the image to localStorage correctly', async () => {
+    const wrapper = mount(Processing, { global: { plugins: [router] } });
+    const inputFile = wrapper.find('input[type="file"][data-testid="infrared-file-input"]');
+
+    const file = new File(["content"], "example.png", { type: "image/png" });
+    Object.defineProperty(inputFile.element, 'files', { value: [file] });
+
+    await inputFile.trigger('change');
+    await flushPromises();
+
+    await wrapper.find('#save-button').trigger('click');
+
+    expect(localStorage.getItem('infraredImage')).toContain("data:image/png");
+  });
+
+  it('navigates to result page when getResults button is clicked', async () => {
+    const pushSpy = jest.spyOn(router, 'push');
+    const wrapper = mount(Processing, { global: { plugins: [router] } });
+
+    await wrapper.find('#get-result').trigger('click');
+
+    expect(pushSpy).toHaveBeenCalledWith('/result');
+    pushSpy.mockRestore();
+  });
+});

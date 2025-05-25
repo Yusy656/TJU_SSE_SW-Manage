@@ -1,0 +1,105 @@
+// src/components/__tests__/LearnMorePage.spec.js
+import { mount } from '@vue/test-utils';
+// 假设您的组件位于 ../LearnMorePage.vue
+import LearnMorePage from '../LearnMorePage.vue';
+
+// 模拟 window.open
+const mockOpen = jest.fn();
+window.open = mockOpen;
+
+jest.mock('@/assets/images/example.png', () => 'mocked-example-url');  
+jest.mock('@/assets/images/github.png', () => 'mocked-github-url');  
+
+describe('LearnMorePage.vue', () => {
+  // 每次测试前重置模拟函数
+  beforeEach(() => {
+    mockOpen.mockReset();
+  });
+
+  it('renders the page with correct titles', () => {
+    const wrapper = mount(LearnMorePage);
+    
+    // 测试标题渲染
+    const titles = wrapper.findAll('.title');
+    expect(titles.length).toBe(3);
+    expect(titles[0].text()).toBe('What is EmberHunter？');
+    expect(titles[1].text()).toBe('Why EmberHunter？');
+    expect(titles[2].text()).toBe('How it works？');
+  });
+
+  it('renders the page with correct text content', () => {
+    const wrapper = mount(LearnMorePage);
+    
+    // 测试主要内容渲染
+    const textContainers = wrapper.findAll('.text');
+    expect(textContainers.length).toBe(3);
+    
+    // 验证第一段文本内容包含关键词
+    expect(textContainers[0].text()).toContain('EmberHunter aims to provide');
+    expect(textContainers[0].text()).toContain('smoky environments');
+    
+    // 验证第二段文本内容包含关键词
+    expect(textContainers[1].text()).toContain('innovative human target detection');
+    expect(textContainers[1].text()).toContain('see through smoke');
+    
+    // 验证第三段文本内容包含关键词
+    expect(textContainers[2].text()).toContain('dehazing algorithm PTTD');
+    expect(textContainers[2].text()).toContain('YOLOv11');
+  });
+
+  it('renders the example image', () => {
+    const wrapper = mount(LearnMorePage);
+    
+    // 测试图片是否正确渲染
+    const exampleImg = wrapper.find('.example-png');
+    expect(exampleImg.exists()).toBe(true);
+    expect(exampleImg.attributes('src')).toBe('mocked-example-url');
+    //expect(exampleImg.attributes('src')).toContain('example.png');
+  });
+
+  it('renders the GitHub section with image and text', () => {
+    const wrapper = mount(LearnMorePage);
+    
+    // 测试 GitHub 图片和文本是否正确渲染
+    const githubSection = wrapper.find('.group-name');
+    expect(githubSection.exists()).toBe(true);
+    
+    const githubImg = wrapper.find('.group-name-png img');
+    expect(githubImg.exists()).toBe(true);
+    expect(githubImg.attributes('src')).toBe('mocked-github-url');
+    //expect(githubImg.attributes('src')).toContain('github.png');
+    
+    const groupNameText = wrapper.find('.group-name-text');
+    expect(groupNameText.text()).toBe('No Other Names');
+  });
+
+  it('opens GitHub link when group name is clicked', async () => {
+    const wrapper = mount(LearnMorePage);
+    
+    // 点击 GitHub 链接
+    await wrapper.find('.group-name').trigger('click');
+    
+    // 验证 window.open 被调用，且参数正确
+    expect(mockOpen).toHaveBeenCalledTimes(1);
+    expect(mockOpen).toHaveBeenCalledWith('https://github.com/Yusy656/TJU_SSE_SW-Manage', '_blank');
+  });
+
+  it('has the correct overall structure', () => {
+    const wrapper = mount(LearnMorePage);
+    
+    // 验证页面结构
+    expect(wrapper.find('.learn-more-page').exists()).toBe(true);
+    expect(wrapper.find('.uptext').exists()).toBe(true);
+    expect(wrapper.find('.downtext').exists()).toBe(true);
+    
+    // 验证上半部分结构
+    const uptext = wrapper.find('.uptext');
+    expect(uptext.findAll('.left-text').length).toBe(1);
+    expect(uptext.findAll('.right-text').length).toBe(1);
+    
+    // 验证下半部分结构
+    const downtext = wrapper.find('.downtext');
+    expect(downtext.findAll('.left-text').length).toBe(1);
+    expect(downtext.findAll('.right-text').length).toBe(1);
+  });
+});
