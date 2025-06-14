@@ -107,8 +107,10 @@ __global__ void DeformablePSROIPoolForwardKernelCuda(
     int part_h = floor(static_cast<T>(ph) / pooled_height * part_size);
     int part_w = floor(static_cast<T>(pw) / pooled_width * part_size);
     int class_id = ctop / channels_each_class;
-    T trans_x = no_trans ? static_cast<T>(0) : bottom_trans[(((n * num_classes + class_id) * 2) * part_size + part_h) * part_size + part_w] * trans_std;
-    T trans_y = no_trans ? static_cast<T>(0) : bottom_trans[(((n * num_classes + class_id) * 2 + 1) * part_size + part_h) * part_size + part_w] * trans_std;
+    T trans_x = no_trans ? static_cast<T>(0) : bottom_trans[(((n * num_classes + class_id) * 2)
+        * part_size + part_h) * part_size + part_w] * trans_std;
+    T trans_y = no_trans ? static_cast<T>(0) : bottom_trans[(((n * num_classes + class_id) * 2 + 1)
+        * part_size + part_h) * part_size + part_w] * trans_std;
 
     T wstart = static_cast<T>(pw) * bin_size_w + roi_start_w;
     wstart += trans_x * roi_width;

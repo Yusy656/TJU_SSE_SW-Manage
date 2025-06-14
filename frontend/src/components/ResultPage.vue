@@ -41,11 +41,11 @@
                             <h4 class="section-title">去雾处理指标</h4>
                             <div class="metric-item">
                                 <span class="metric-label">原始梯度:</span>
-                                <span class="metric-value">{{ metrics.dehazing.original_gradient.toFixed(4) }}</span>
+                                <span class="metric-value">{{ metrics.dehazing.avg_original_gradient.toFixed(4) }}</span>
                             </div>
                             <div class="metric-item">
                                 <span class="metric-label">去雾后梯度:</span>
-                                <span class="metric-value">{{ metrics.dehazing.dehazed_gradient.toFixed(4) }}</span>
+                                <span class="metric-value">{{ metrics.dehazing.avg_dehazed_gradient.toFixed(4) }}</span>
                             </div>
                             <div class="metric-item">
                                 <span class="metric-label">改善比例:</span>
@@ -53,7 +53,7 @@
                             </div>
                             <div class="metric-item">
                                 <span class="metric-label">处理时间:</span>
-                                <span class="metric-value">{{ metrics.dehazing.processing_time.toFixed(2) }}s</span>
+                                <span class="metric-value">{{ metrics.dehazing.avg_processing_time.toFixed(2) }}s</span>
                             </div>
                         </div>
 
@@ -168,6 +168,7 @@ const startPolling = () => {
                 fusingImage.value = `http://localhost:5000${fusingPath}`;
                 combinedImage.value = `http://localhost:5000${combinedPath}`;
                 metrics.value = responseMetrics;
+                console.log('metrics:', metrics.value);
                 isProcessing.value = false;
                 clearInterval(pollingInterval.value);
                 ElMessage.success('图片处理完成！');

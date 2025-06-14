@@ -135,7 +135,7 @@ def upload_image():
                 'message': f'{image_type} image uploaded successfully',
                 'filename': new_filename,
                 'type': image_type,
-                'session_id': session_id
+                'session_id': session_idme
             }), 200
     except Exception as e:
         logger.error(f"上传过程中发生错误: {str(e)}")

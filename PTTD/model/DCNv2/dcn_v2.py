@@ -323,7 +323,7 @@ class DCNPooling(DCNv2Pooling):
 
             # do roi_align first
             n = rois.shape[0]
-            roi = dcn_v2_pooling(
+            roi = dcn_v2_pooling(s
                 input,
                 rois,
                 offset,
